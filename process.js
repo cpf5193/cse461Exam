@@ -10,14 +10,14 @@ var readline = require('readline');
 
 if (process.argv.length != 4) {
   console.log("Usage: ./run <peer file> <port> <time>");
+  process.exit(1);
 }
 
 var peerFileName = process.argv[2];
-var listenerPort = int(process.argv[3]);
-var proposalTime = int(process.argv[4]);
+var listenerPort = parseInt(process.argv[3]);
+var proposalTime = parseInt(process.argv[4]);
 var ownIp;
 var timeVotes = {};
-var listener = net.createServer(function(c));
 var peers = [];
 var peerSockets = {proposalTime: 1};
 var maxVotes = 1;
@@ -41,7 +41,7 @@ serverSocket.on('message', function(msg) {
 });
 
 readPeers(peerFileName);
-sendTimeToPeers()
+sendTimeToPeers();
 
 while(timeoutCount < 3) {
   setTimeout(function(){}, 1);
@@ -58,12 +58,11 @@ function readPeers(fileName) {
     var tokens = tokenizeBySpaces(line);
     if (tokens[0] != ownIp || tokens[1] != listenerPort) {
       var peerSocket = dgram.createSocket('udp4');
-      peerSocket.bind(int(tokens[1]));
+      peerSocket.bind(parseInt(tokens[1]));
       peers.push({
         'ip': tokens[0],
-        'port': int(tokens[1]),
-        'time': int(tokens[2]),
-        'socket': 
+        'port': parseInt(tokens[1]),
+        'time': parseInt(tokens[2]),
       });
       var ipPort = [tokens[0], tokens[1]];
       peerSockets.push({
@@ -117,6 +116,15 @@ function handleProposal(fromIp, fromPort, time) {
     }
   }
 }
+
+//Terminate if end of file is read from user input
+process.stdin.on('end', function() {
+  for (var socketObj in peers){
+    socketPeers[socketObj.ip, socketObj.port].close();
+  }
+  serverSocket.close();
+  process.exit(1);
+});
 
 
 
