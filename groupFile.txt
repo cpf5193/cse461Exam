@@ -1,0 +1,2 @@
+attu3.cs.washington.edu 2242
+attu1.cs.washington.edu 15644
