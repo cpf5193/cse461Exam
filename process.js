@@ -8,7 +8,7 @@ var fs = require('fs');
 var readline = require('readline');
 
 
-if (process.argv.length != 4) {
+if (process.argv.length != 5) {
   console.log("Usage: ./run <peer file> <port> <time>");
   process.exit(1);
 }
@@ -17,23 +17,26 @@ var peerFileName = process.argv[2];
 var listenerPort = parseInt(process.argv[3]);
 var proposalTime = parseInt(process.argv[4]);
 var ownIp;
-var timeVotes = {};
+var timeVotes = {proposalTime: 1};
 var peers = [];
-var peerSockets = {proposalTime: 1};
+var peerSockets = {};
 var maxVotes = 1;
 var timeoutCount = 0;
 var currentProposal;
 var TIMEOUT_DURATION = 3;
 
 // Retrieve own IP
+ownIp = '127.0.0.1';
+/*
 require('dns').lookup(require('os').hostname(), function (err, add, fam) {
   ownIp = add;
-});
+  console.log('ownIp: ' + ownIp);
+});*/
 
 // Listen for proposals
 serverSocket = datagram.createSocket('udp4');
 serverSocket.bind(listenerPort);
-
+console.log("serverSocket bound");
 serverSocket.on('message', function(msg) {
   console.log('received message');
   var tokens = tokenizeBySpaces(msg);
@@ -49,12 +52,15 @@ while(timeoutCount < 3) {
 }
 
 function readPeers(fileName) {
+  console.log("peerFileName: " + peerFileName);
   var rd = readline.createInterface({
     input: fs.createReadStream(peerFileName),
     output: process.stdout,
     terminal: false
   });
+  console.log("reading Peers");
   rd.on('line', function(line){
+    console.log("reading line: " + line);
     var tokens = tokenizeBySpaces(line);
     if (tokens[0] != ownIp || tokens[1] != listenerPort) {
       var peerSocket = dgram.createSocket('udp4');
